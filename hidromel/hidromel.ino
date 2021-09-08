@@ -94,7 +94,7 @@ void setup() {
 
 
   xTaskCreate(
-      task_monitor_serial        
+      task_controle        
       ,  (const portCHAR *)"monitor_serial"  
       ,  156                     
       ,  NULL                       
@@ -102,14 +102,44 @@ void setup() {
       ,  NULL );                    
 
   xTaskCreate(
-      task_leds        
-      ,  (const portCHAR *)"leds"  
+      task_led_azul        
+      ,  (const portCHAR *)"led_azul"  
       ,  156                     
       ,  NULL                       
       ,  1                         
       ,  NULL );                    
 
+  xTaskCreate(
+      task_led_verde        
+      ,  (const portCHAR *)"led_verde"  
+      ,  156                     
+      ,  NULL                       
+      ,  1                         
+      ,  NULL );    
 
+  xTaskCreate(
+      task_led_vermelho        
+      ,  (const portCHAR *)"led_vermelho"  
+      ,  156                     
+      ,  NULL                       
+      ,  1                         
+      ,  NULL );    
+
+  xTaskCreate(
+      task_aquecimento        
+      ,  (const portCHAR *)"led_aquecimento"  
+      ,  156                     
+      ,  NULL                       
+      ,  1                         
+      ,  NULL );    
+
+  xTaskCreate(
+      task_resfriamento        
+      ,  (const portCHAR *)"led_resfriamento"  
+      ,  156                     
+      ,  NULL                       
+      ,  1                         
+      ,  NULL );          
 
 /* A partir deste momento, o scheduler de tarefas entra em ação e as tarefas executam */
 }
@@ -118,95 +148,94 @@ void loop() {
     /* No FreeRTOS tudo é feito pelas tarefas */
 }
 
+void switch_led(bool azul, bool verde, bool vermelho) {
+  xQueueOverwrite(fila_led_azul, (void *)azul);
+  xQueueOverwrite(fila_led_verde, (void *)verde);
+  xQueueOverwrite(fila_led_vermelho, (void *)vermelho);
+}
+
+
+void switch_aquecimento(bool flag) {
+  xQueueOverwrite(fila_aquecimento, (void *)flag);
+}
+
+void switch_resfriamento(bool flag) {
+  xQueueOverwrite(fila_resfriamento, (void *)flag);
+}
+
+
+/* TAREFA DE SENSOR */
 /* task_dht11_temperatura: tarefa responsável por fazer a leitura da temperatura por meio do sensor dht11 */
 void task_dht11_temperatura( void *pvParameters )
 {
-
    float temperatura = 0.0;
-
    vTaskDelay( 2000 / portTICK_PERIOD_MS );
-
    while(1)
    {
-      
+    
       temperatura = dht.readTemperature();
-
       /* Insere leitura na fila */
       xQueueOverwrite(fila_dht11_temperatura, (void *)&temperatura);
-
       vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
-      
+     
    }
-   
+  
 }
 
 
-
-/* task_monitor_serial: tarefa responsável por imprimir na tela os dados da fila (sensor dht11) */
-void task_monitor_serial( void *pvParameters )
-{
-   float temperatura = 0.0;
-   while(1)
-   {
-      xQueuePeek(fila_dht11_temperatura, &temperatura,TEMPO_PARA_AGUARDAR_FILA);    
-      Serial.print(F("Temperatura: "));
-      Serial.print(temperatura);
-      Serial.println(F("°C "));
-      vTaskDelay( 2000 / portTICK_PERIOD_MS ); /* Exibir a temperatura a cada 2 segundos*/
-   } 
-}
-
-
-
-
-
-/* task_leds: tarefa responsável por acender os leds conforme a condição atual */
+/* TAREFA DE CONTROLE */
 /* dados considerando a levedura Lalvin 71B */
 /* https://www.indupropil.com.br/levedura-lalvin-71b-5gr.html */
-void task_leds( void *pvParameters )
+
+void task_controle( void *pvParameters )
 {
    float temperatura = 0.0;
    while(1)
    {
       xQueuePeek(fila_dht11_temperatura, &temperatura,TEMPO_PARA_AGUARDAR_FILA);    
 
-/* led vermelho = temperatura crítica, manutenção do acionamento dos sistemas de refrigeração ou aquecimento */
+/* Temperatura críticamente baixa => acionamento dos sistemas de refrigeração ou aquecimento */
       if(temperatura <= 15.0 ){
-        digitalWrite(LED_VERMELHO, HIGH);
-        digitalWrite(LED_AMARELO, LOW);
-        digitalWrite(LED_VERDE, LOW);
-
+        switch_led(true, false, false);   
+        switch_aquecimento(true);
+        switch_resfriamento (false);  
+        vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
       }
 
-/* led amarelo = temperatura de atenção, acionamento do sistema de refrigeração ou aquecimento */
+/* Temperatura de atenção, acionamento do sistema de refrigeração ou aquecimento */
       if(temperatura > 15.0 && temperatura <= 17.0) {
-        digitalWrite(LED_VERMELHO, LOW);
-        digitalWrite(LED_AMARELO, HIGH);
-        digitalWrite(LED_VERDE, LOW);
+        switch_led(true, true, false);
+        switch_aquecimento(true);
+        switch_resfriamento (false);        
+        vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/    
       }
 
-/* led verde = dentro da faixa de temperatura desejada */
+/* Dentro da faixa de temperatura desejada */
       if(temperatura > 17.0 && temperatura < 28.0) {
-        digitalWrite(LED_VERMELHO, LOW);
-        digitalWrite(LED_AMARELO, LOW);
-        digitalWrite(LED_VERDE, HIGH);
+        switch_led(false, true, false); 
+        switch_aquecimento(false);
+        switch_resfriamento (false);       
+        vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/           
       }
 
-/* led amarelo = temperatura de atenção, acionamento do sistema de refrigeração ou aquecimento */
+/* Temperatura de atenção, acionamento do sistema de refrigeração ou aquecimento */
       if(temperatura >= 28.0 && temperatura <= 17.0) {
-        digitalWrite(LED_VERMELHO, LOW);
-        digitalWrite(LED_AMARELO, HIGH);
-        digitalWrite(LED_VERDE, LOW);
+        switch_led(false, true, true);
+        switch_aquecimento(false);
+        switch_resfriamento (true);        
+        vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/   
       }
 
 
 /* led vermelho = temperatura crítica, manutenção do acionamento dos sistemas de refrigeração ou aquecimento */
       if(temperatura >= 30.0){
-        digitalWrite(LED_VERMELHO, HIGH);
-        digitalWrite(LED_AMARELO, LOW);
-        digitalWrite(LED_VERDE,LOW );
+        switch_led(false, false, true);   
+        switch_aquecimento(false);
+        switch_resfriamento (true);     
+        vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/    
       } 
-          vTaskDelay( 2000 / portTICK_PERIOD_MS ); /* Exibir a temperatura a cada 2 segundos*/
 
    }
+
+   
 }
