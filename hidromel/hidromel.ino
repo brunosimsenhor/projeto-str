@@ -19,6 +19,9 @@ DHT dht(DHTPIN, DHTTYPE);
 #define LED_VERDE 4
 #define LED_VERMELHO 5
 
+/* Definições Resfriamento e Aquecimento*/
+#define RESFRIAMENTO 6
+#define AQUECIMENTO 7
 
 /* filas (queues) */
 QueueHandle_t fila_dht11_temperatura;
@@ -236,6 +239,106 @@ void task_controle( void *pvParameters )
       } 
 
    }
+}   
+/* TAREFAS DE ATUAÇÃO */
 
-   
+void task_led_azul( void *pvParameters )
+{
+  
+   boolean azul = false;
+   vTaskDelay( 2000 / portTICK_PERIOD_MS );
+   while(1)
+   {    
+      /* Recupera valor da  fila */
+      xQueuePeek(fila_led_azul, &azul,TEMPO_PARA_AGUARDAR_FILA);    
+      if(azul == false){
+        digitalWrite(LED_AZUL, LOW);
+      }
+      if(azul == true) {
+        digitalWrite(LED_AZUL, HIGH);
+      }
+      vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
+   }
+}
+
+
+void task_led_verde( void *pvParameters )
+{
+  
+   boolean verde = false;
+   vTaskDelay( 2000 / portTICK_PERIOD_MS );
+   while(1)
+   {    
+      /* Recupera valor da  fila */
+      xQueuePeek(fila_led_verde, &verde,TEMPO_PARA_AGUARDAR_FILA);    
+      if(verde == false){
+        digitalWrite(LED_VERDE, LOW);
+      }
+      if(verde == true) {
+        digitalWrite(LED_VERDE, HIGH);
+      }
+      vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
+   }
+}
+
+
+void task_led_vermelho( void *pvParameters )
+{
+  
+   boolean vermelho = false;
+   vTaskDelay( 2000 / portTICK_PERIOD_MS );
+   while(1)
+   {    
+      /* Recupera valor da  fila */
+      xQueuePeek(fila_led_vermelho, &vermelho,TEMPO_PARA_AGUARDAR_FILA);    
+      if(vermelho == false){
+        digitalWrite(LED_VERMELHO, LOW);
+      }
+      if(vermelho == true) {
+        digitalWrite(LED_VERMELHO, HIGH);
+      }
+      vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
+   }
+}
+
+
+
+
+void task_resfriamento( void *pvParameters )
+{
+  
+   boolean resfriamento = false;
+   vTaskDelay( 2000 / portTICK_PERIOD_MS );
+   while(1)
+   {    
+      /* Recupera valor da  fila */
+      xQueuePeek(fila_resfriamento, &resfriamento,TEMPO_PARA_AGUARDAR_FILA);    
+      if(resfriamento == false){
+        digitalWrite(RESFRIAMENTO, LOW);
+      }
+      if(resfriamento == true) {
+        digitalWrite(RESFRIAMENTO, HIGH);
+      }
+      vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
+   }
+}
+
+
+void task_aquecimento( void *pvParameters )
+{
+  
+   boolean aquecimento = false;
+   vTaskDelay( 2000 / portTICK_PERIOD_MS );
+   while(1)
+   {    
+      /* Recupera valor da  fila */
+      xQueuePeek(fila_aquecimento, &aquecimento,TEMPO_PARA_AGUARDAR_FILA);    
+      if(aquecimento == false){
+        digitalWrite(AQUECIMENTO, LOW);
+      }
+      if(aquecimento == true) {
+        digitalWrite(AQUECIMENTO, HIGH);
+      }
+      vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
+   }
 }
