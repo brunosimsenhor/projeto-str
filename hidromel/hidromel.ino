@@ -20,8 +20,8 @@ DHT dht(DHTPIN, DHTTYPE);
 #define LED_VERMELHO 5
 
 /* Definições Resfriamento e Aquecimento*/
-#define RESFRIAMENTO 6
-#define AQUECIMENTO 7
+#define AQUECIMENTO 6
+#define RESFRIAMENTO 7
 
 /* filas (queues) */
 QueueHandle_t fila_dht11_temperatura;
