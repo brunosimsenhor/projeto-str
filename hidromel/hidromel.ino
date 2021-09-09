@@ -180,6 +180,8 @@ void task_dht11_temperatura( void *pvParameters )
       /* Insere leitura na fila */
       xQueueOverwrite(fila_dht11_temperatura, (void *)&temperatura);
       vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
+      Serial.println(temperatura);
+      Serial.println();
      
    }
   
@@ -199,6 +201,7 @@ void task_controle( void *pvParameters )
 
 /* Temperatura críticamente baixa => acionamento dos sistemas de refrigeração ou aquecimento */
       if(temperatura <= 15.0 ){
+        Serial.println("Temperatura críticamente baixa");
         switch_led(true, false, false);   
         switch_aquecimento(true);
         switch_resfriamento (false);  
@@ -207,6 +210,7 @@ void task_controle( void *pvParameters )
 
 /* Temperatura de atenção, acionamento do sistema de refrigeração ou aquecimento */
       if(temperatura > 15.0 && temperatura <= 17.0) {
+        Serial.println("Temperatura de atenção - baixa");
         switch_led(true, true, false);
         switch_aquecimento(true);
         switch_resfriamento (false);        
@@ -215,6 +219,7 @@ void task_controle( void *pvParameters )
 
 /* Dentro da faixa de temperatura desejada */
       if(temperatura > 17.0 && temperatura < 28.0) {
+        Serial.println("Temperatura desejada");        
         switch_led(false, true, false); 
         switch_aquecimento(false);
         switch_resfriamento (false);       
@@ -223,6 +228,7 @@ void task_controle( void *pvParameters )
 
 /* Temperatura de atenção, acionamento do sistema de refrigeração ou aquecimento */
       if(temperatura >= 28.0 && temperatura <= 17.0) {
+        Serial.println("Temperatura de atenção - alta");
         switch_led(false, true, true);
         switch_aquecimento(false);
         switch_resfriamento (true);        
@@ -232,6 +238,7 @@ void task_controle( void *pvParameters )
 
 /* led vermelho = temperatura crítica, manutenção do acionamento dos sistemas de refrigeração ou aquecimento */
       if(temperatura >= 30.0){
+        Serial.println("Temperatura críticamente alta");        
         switch_led(false, false, true);   
         switch_aquecimento(false);
         switch_resfriamento (true);     
@@ -250,7 +257,10 @@ void task_led_azul( void *pvParameters )
    while(1)
    {    
       /* Recupera valor da  fila */
-      xQueuePeek(fila_led_azul, &azul,TEMPO_PARA_AGUARDAR_FILA);    
+      xQueuePeek(fila_led_azul, &azul,TEMPO_PARA_AGUARDAR_FILA);
+      Serial.println("AZUL =>");
+      Serial.println(azul);
+    
       if(azul == false){
         digitalWrite(LED_AZUL, LOW);
       }
@@ -271,6 +281,8 @@ void task_led_verde( void *pvParameters )
    {    
       /* Recupera valor da  fila */
       xQueuePeek(fila_led_verde, &verde,TEMPO_PARA_AGUARDAR_FILA);    
+      Serial.println("VERDE =>");
+      Serial.println(verde);      
       if(verde == false){
         digitalWrite(LED_VERDE, LOW);
       }
@@ -291,6 +303,8 @@ void task_led_vermelho( void *pvParameters )
    {    
       /* Recupera valor da  fila */
       xQueuePeek(fila_led_vermelho, &vermelho,TEMPO_PARA_AGUARDAR_FILA);    
+      Serial.println("VERMELHO =>");
+      Serial.println(vermelho);
       if(vermelho == false){
         digitalWrite(LED_VERMELHO, LOW);
       }
