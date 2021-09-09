@@ -51,7 +51,6 @@ void task_aquecimento(void *pvParameters );
 void task_resfriamento(void *pvParameters );
 
 
-
 void setup() {
 
   /* Saidas dos LEDs */
@@ -90,7 +89,7 @@ void setup() {
   xTaskCreate(
       task_dht11_temperatura        /* Funcao que implementa a tarefa */
       ,  (const portCHAR *)"dht11"  /* Nome (para fins de debug, se necessário) */
-      ,  1024                       /* Tamanho da stack (em words) reservada para essa tarefa */
+      ,  1024                        /* Tamanho da stack (em words) reservada para essa tarefa */
       ,  NULL                       /* Parametros passados (nesse caso, não há) */
       ,  2                          /* Prioridade */
       ,  NULL );                    /* Handle da tarefa, opcional (nesse caso, não há) */
@@ -101,7 +100,7 @@ void setup() {
       ,  (const portCHAR *)"monitor_serial"  
       ,  156                     
       ,  NULL                       
-      ,  1                         
+      ,  2                         
       ,  NULL );                    
 
   xTaskCreate(
@@ -133,7 +132,7 @@ void setup() {
       ,  (const portCHAR *)"led_aquecimento"  
       ,  156                     
       ,  NULL                       
-      ,  1                         
+      ,  3                         
       ,  NULL );    
 
   xTaskCreate(
@@ -141,7 +140,7 @@ void setup() {
       ,  (const portCHAR *)"led_resfriamento"  
       ,  156                     
       ,  NULL                       
-      ,  1                         
+      ,  3                         
       ,  NULL );          
 
 /* A partir deste momento, o scheduler de tarefas entra em ação e as tarefas executam */
@@ -171,6 +170,8 @@ void switch_resfriamento(bool flag) {
 /* task_dht11_temperatura: tarefa responsável por fazer a leitura da temperatura por meio do sensor dht11 */
 void task_dht11_temperatura( void *pvParameters )
 {
+   /* Variavel para recuperar o High Water Mark da task */
+   UBaseType_t valor_high_water_mark_task_temperatura;
    float temperatura = 0.0;
    vTaskDelay( 2000 / portTICK_PERIOD_MS );
    while(1)
@@ -180,8 +181,15 @@ void task_dht11_temperatura( void *pvParameters )
       /* Insere leitura na fila */
       xQueueOverwrite(fila_dht11_temperatura, (void *)&temperatura);
       vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
+
+      Serial.println("TEMPERATURA ATUAL: ");
       Serial.println(temperatura);
       Serial.println();
+
+      /*Obtem o High Water Mark da task atual */
+      valor_high_water_mark_task_temperatura = uxTaskGetStackHighWaterMark(NULL);
+      Serial.print("High water mark (words) da task_dht11_temperatura:");
+      Serial.println(valor_high_water_mark_task_temperatura);
      
    }
   
@@ -194,6 +202,8 @@ void task_dht11_temperatura( void *pvParameters )
 
 void task_controle( void *pvParameters )
 {
+   /* Variavel para recuperar o High Water Mark da task */
+   UBaseType_t valor_high_water_mark_task_controle;
    float temperatura = 0.0;
    while(1)
    {
@@ -245,13 +255,18 @@ void task_controle( void *pvParameters )
         vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/    
       } 
 
+      /*Obtem o High Water Mark da task atual */
+      valor_high_water_mark_task_controle = uxTaskGetStackHighWaterMark(NULL);
+      Serial.print("High water mark (words) da valor_high_water_mark_task_controle:");
+      Serial.println(valor_high_water_mark_task_controle);
    }
 }   
 /* TAREFAS DE ATUAÇÃO */
 
 void task_led_azul( void *pvParameters )
 {
-  
+   /* Variavel para recuperar o High Water Mark da task */
+   UBaseType_t valor_high_water_mark_task_led_azul;
    boolean azul = false;
    vTaskDelay( 2000 / portTICK_PERIOD_MS );
    while(1)
@@ -268,13 +283,19 @@ void task_led_azul( void *pvParameters )
         digitalWrite(LED_AZUL, HIGH);
       }
       vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
+
+      /*Obtem o High Water Mark da task atual */
+      valor_high_water_mark_task_led_azul = uxTaskGetStackHighWaterMark(NULL);
+      Serial.print("High water mark (words) da valor_high_water_mark_task_led_azul:");
+      Serial.println(valor_high_water_mark_task_led_azul);
    }
 }
 
 
 void task_led_verde( void *pvParameters )
 {
-  
+   /* Variavel para recuperar o High Water Mark da task */
+   UBaseType_t valor_high_water_mark_task_led_verde;
    boolean verde = false;
    vTaskDelay( 2000 / portTICK_PERIOD_MS );
    while(1)
@@ -290,13 +311,19 @@ void task_led_verde( void *pvParameters )
         digitalWrite(LED_VERDE, HIGH);
       }
       vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
+
+      /*Obtem o High Water Mark da task atual */
+      valor_high_water_mark_task_led_verde = uxTaskGetStackHighWaterMark(NULL);
+      Serial.print("High water mark (words) da valor_high_water_mark_task_led_verde:");
+      Serial.println(valor_high_water_mark_task_led_verde);
    }
 }
 
 
 void task_led_vermelho( void *pvParameters )
 {
-  
+   /* Variavel para recuperar o High Water Mark da task */
+   UBaseType_t valor_high_water_mark_task_led_vermelho;
    boolean vermelho = false;
    vTaskDelay( 2000 / portTICK_PERIOD_MS );
    while(1)
@@ -312,6 +339,12 @@ void task_led_vermelho( void *pvParameters )
         digitalWrite(LED_VERMELHO, HIGH);
       }
       vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
+
+      
+      /*Obtem o High Water Mark da task atual */
+      valor_high_water_mark_task_led_vermelho = uxTaskGetStackHighWaterMark(NULL);
+      Serial.print("High water mark (words) da valor_high_water_mark_task_led_vermelho:");
+      Serial.println(valor_high_water_mark_task_led_vermelho);
    }
 }
 
@@ -320,7 +353,8 @@ void task_led_vermelho( void *pvParameters )
 
 void task_resfriamento( void *pvParameters )
 {
-  
+   /* Variavel para recuperar o High Water Mark da task */
+   UBaseType_t valor_high_water_mark_task_resfriamento;
    boolean resfriamento = false;
    vTaskDelay( 2000 / portTICK_PERIOD_MS );
    while(1)
@@ -334,6 +368,11 @@ void task_resfriamento( void *pvParameters )
         digitalWrite(RESFRIAMENTO, HIGH);
       }
       vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
+
+      /*Obtem o High Water Mark da task atual */
+      valor_high_water_mark_task_resfriamento = uxTaskGetStackHighWaterMark(NULL);
+      Serial.print("High water mark (words) da valor_high_water_mark_task_resfriamento:");
+      Serial.println(valor_high_water_mark_task_resfriamento);
    }
 }
 
@@ -341,6 +380,8 @@ void task_resfriamento( void *pvParameters )
 void task_aquecimento( void *pvParameters )
 {
   
+   /* Variavel para recuperar o High Water Mark da task */
+   UBaseType_t valor_high_water_mark_task_aquecimento;
    boolean aquecimento = false;
    vTaskDelay( 2000 / portTICK_PERIOD_MS );
    while(1)
@@ -354,5 +395,10 @@ void task_aquecimento( void *pvParameters )
         digitalWrite(AQUECIMENTO, HIGH);
       }
       vTaskDelay( 2000 / portTICK_PERIOD_MS );  /* Ler a temperatura a cada 2 segundos*/
+   
+      /*Obtem o High Water Mark da task atual */
+      valor_high_water_mark_task_aquecimento = uxTaskGetStackHighWaterMark(NULL);
+      Serial.print("High water mark (words) da valor_high_water_mark_task_aquecimento:");
+      Serial.println(valor_high_water_mark_task_aquecimento);
    }
 }
