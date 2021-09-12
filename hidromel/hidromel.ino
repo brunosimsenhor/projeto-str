@@ -80,13 +80,13 @@ void setup() {
   }
 
   /* Criar tarefas */
-  xTaskCreate(task_dht11_temperatura, (const portCHAR *)"dht11",            200, NULL,  10, NULL);
-  xTaskCreate(task_controle,          (const portCHAR *)"monitor_serial",   90,  NULL,  2,  NULL);
-  xTaskCreate(task_led_azul,          (const portCHAR *)"led_azul",         70,  NULL,  1,  NULL);
-  xTaskCreate(task_led_verde,         (const portCHAR *)"led_verde",        70,  NULL,  1,  NULL);
-  xTaskCreate(task_led_vermelho,      (const portCHAR *)"led_vermelho",     70,  NULL,  1,  NULL);
-  xTaskCreate(task_aquecimento,       (const portCHAR *)"led_aquecimento",  70,  NULL,  3,  NULL);
-  xTaskCreate(task_resfriamento,      (const portCHAR *)"led_resfriamento", 70,  NULL,  3,  NULL);
+  xTaskCreate(task_dht11_temperatura, (const portCHAR *)"dht11",            1024, NULL,  5, NULL);
+  xTaskCreate(task_controle,          (const portCHAR *)"monitor_serial",   156,  NULL,  4,  NULL);
+  xTaskCreate(task_led_azul,          (const portCHAR *)"led_azul",         156,  NULL,  2,  NULL);
+  xTaskCreate(task_led_verde,         (const portCHAR *)"led_verde",        156,  NULL,  1,  NULL);
+  xTaskCreate(task_led_vermelho,      (const portCHAR *)"led_vermelho",     156,  NULL,  2,  NULL);
+  xTaskCreate(task_aquecimento,       (const portCHAR *)"led_aquecimento",  156,  NULL,  3,  NULL);
+  xTaskCreate(task_resfriamento,      (const portCHAR *)"led_resfriamento", 156,  NULL,  3,  NULL);
 
   Serial.println("setup finalizado");
   /* A partir deste momento, o scheduler de tarefas entra em ação e as tarefas executam */
@@ -97,18 +97,18 @@ void loop() {
 }
 
 void switch_led(int azul, int verde, int vermelho) {
-  xQueueOverwrite(fila_led_azul, (void *)azul);
-  xQueueOverwrite(fila_led_verde, (void *)verde);
-  xQueueOverwrite(fila_led_vermelho, (void *)vermelho);
+  xQueueOverwrite(fila_led_azul, (void *)&azul);
+  xQueueOverwrite(fila_led_verde, (void *)&verde);
+  xQueueOverwrite(fila_led_vermelho, (void *)&vermelho);
 }
 
 
 void switch_aquecimento(int flag) {
-  xQueueOverwrite(fila_aquecimento, (void *)flag);
+  xQueueOverwrite(fila_aquecimento, (void *)&flag);
 }
 
 void switch_resfriamento(int flag) {
-  xQueueOverwrite(fila_resfriamento, (void *)flag);
+  xQueueOverwrite(fila_resfriamento, (void *)&flag);
 }
 
 
